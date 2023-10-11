@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,7 +14,9 @@ class UserController extends Controller
      */
     public function getUsers()
     {
-        $userList = User::all();
+        $userList = User::orderBy('updated_at', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return response()->json([
             'status_code' => 200,
@@ -21,15 +25,13 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function createUser(Request $request)
+
+    public function createUser(CreateUserRequest $request)
     {
-        $user = new User;
+        $validatedUser = $request->validated();
+        $validatedUser['password'] = bcrypt($validatedUser['password']);
 
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->password = bcrypt($request->input('password'));
-
-        $user->save();
+        $user = User::create($validatedUser);
 
         return response()->json([
             'status code' => 201,
@@ -38,15 +40,13 @@ class UserController extends Controller
         ]);
     }
 
-    public function updateUser(Request $request, $id)
+    public function updateUser(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
 
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->password = $request->input('password');
+        $user = $request->validated();
 
-        $user->save();
+        $user->update();
 
         return response()->json([
             'status_code' => 200,
@@ -59,7 +59,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $user->delete($user);
+        $user->delete();
 
         return response()->json([
             'status_code' => 200,
