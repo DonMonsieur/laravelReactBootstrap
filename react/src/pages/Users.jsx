@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import api from "../api";
 import { Link } from "react-router-dom";
 
-function App() {
+const App = () => {
     const [users, setUsers] = useState([]);
 
     const getUsers = async () => {
@@ -16,9 +16,22 @@ function App() {
         }
     };
 
+    const deleteUser = async (id) => {
+        const response = await api.delete(`/users/delete/${id}`);
+
+        if (response.status == 200) {
+            alert(response.data.message);
+            getUsers();
+        }
+    };
+
     useEffect(() => {
         getUsers();
     }, []);
+
+    const handleUpdateUser = () => {
+        return <Link to="/users/update"></Link>;
+    };
 
     return (
         <>
@@ -32,6 +45,7 @@ function App() {
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,12 +54,25 @@ function App() {
                             <td>{user.id}</td>
                             <td>{user.name}</td>
                             <td>{user.email}</td>
+                            <td>
+                                <Link to={`/users/update/${user.id}`}>
+                                    <Button>Update</Button>
+                                </Link>
+
+                                <Button
+                                    variant="danger"
+                                    style={{ marginLeft: "10px" }}
+                                    onClick={() => deleteUser(user.id)}
+                                >
+                                    Delete
+                                </Button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
         </>
     );
-}
+};
 
 export default App;

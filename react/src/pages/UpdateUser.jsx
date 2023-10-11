@@ -1,27 +1,42 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import api from "../api";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-const CreateUser = () => {
+const UpdateUser = () => {
+    const { id } = useParams();
+    const [userId, setUserId] = useState(id);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
-    const createUser = async () => {
-        const response = await api.post("/users/create", {
+    const updateUser = async () => {
+        const response = await api.put(`/users/update/${userId}`, {
             name: name,
             email: email,
             password: password,
         });
-        console.log(response.data.data);
-        if (response.status === 200) {
+        if (response.status == 200) {
             alert(response.data.message);
             navigate("/");
         }
     };
+
+    const currentUser = async () => {
+        const response = await api.get(`/users/${userId}`);
+
+        if (response.status == 200) {
+            setName(response.data.user.name);
+            setEmail(response.data.user.email);
+        }
+    };
+
+    useEffect(() => {
+        currentUser();
+    }, []);
 
     return (
         <Fragment>
@@ -33,7 +48,7 @@ const CreateUser = () => {
                     <Col sm="10">
                         <Form.Control
                             plaintext
-                            placeholder="Enter new username"
+                            placeholder="Update username"
                             value={name}
                             onChange={(event) => setName(event.target.value)}
                         />
@@ -44,7 +59,7 @@ const CreateUser = () => {
                     <Col sm="10">
                         <Form.Control
                             plaintext
-                            placeholder="Enter new email"
+                            placeholder="Update email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                         />
@@ -62,7 +77,7 @@ const CreateUser = () => {
                     <Col sm="10">
                         <Form.Control
                             type="password"
-                            placeholder="Password"
+                            placeholder="Update Password"
                             value={password}
                             onChange={(event) =>
                                 setPassword(event.target.value)
@@ -73,10 +88,10 @@ const CreateUser = () => {
                 <Link to="/">
                     <Button>Back</Button>
                 </Link>
-                <Button onClick={createUser}>Submit</Button>
+                <Button onClick={updateUser}>Submit</Button>
             </Form>
         </Fragment>
     );
 };
 
-export default CreateUser;
+export default UpdateUser;

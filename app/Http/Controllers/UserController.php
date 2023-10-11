@@ -14,8 +14,7 @@ class UserController extends Controller
      */
     public function getUsers()
     {
-        $userList = User::orderBy('updated_at', 'asc')
-            ->orderBy('created_at', 'asc')
+        $userList = User::orderBy('id', 'asc')
             ->get();
 
         return response()->json([
@@ -23,6 +22,15 @@ class UserController extends Controller
             'message' => 'OK',
             'data' => $userList
         ], 200);
+    }
+
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
+
+        return response()->json([
+            'user' => $user
+        ]);
     }
 
 
@@ -44,9 +52,10 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $user = $request->validated();
+        $validatedUser = $request->validated();
+        $validatedUser['password'] = bcrypt($validatedUser['password']);
 
-        $user->update();
+        $user->update($validatedUser);
 
         return response()->json([
             'status_code' => 200,
